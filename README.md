@@ -12,6 +12,21 @@ Feito para o Sistema de TCC da UNA-SUS/UFSC, seguindo a ABNT (NBR 14724).
 > renumera as menções ao salvar e um conversor para LaTeX. O contrato está
 > descrito em [O que a aplicação precisa oferecer](#o-que-a-aplicação-precisa-oferecer).
 
+## Versões — qual branch serve a qual sistema
+
+| Branch | Sistema | Estado |
+|---|---|---|
+| `tcc-3_0` | TCC 3.0 (Rails 8) | em desenvolvimento |
+
+**Não existe branch `tcc-2_8`**: este plugin nasceu no TCC 3.0 e nunca foi
+instalado no TCC 2.8 (produção atual). Se você foi procurá-lo lá e não achou,
+é por isso.
+
+> ⚠️ Um `git submodule update --remote` **sem** `submodule.<nome>.branch`
+> declarado usa o **HEAD do remoto**, não o branch do sistema em que você está
+> (`git help submodule`: "defaults to the remote HEAD"). Por isso o
+> `.gitmodules` de cada branch do sistema declara o seu.
+
 ## O problema que ele resolve
 
 Numerar ilustração à mão não sobrevive à edição: basta inserir uma figura no
