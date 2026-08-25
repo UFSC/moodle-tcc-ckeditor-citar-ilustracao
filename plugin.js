@@ -39,7 +39,16 @@ CKEDITOR.plugins.add('citar_ilustracao', {
         editor.ui.addButton('CitarIlustracao', {
             label: 'Citar figura/tabela',
             command: 'inserirCitacaoIlustracao',
-            toolbar: 'editing'
+            toolbar: 'editing',
+            // ⚠️ `icon` EXPLICITO. Sem ele o CKEditor procura o icone pelo nome
+            // do BOTAO em minusculas ("citarilustracao"), que nao bate com o
+            // nome registrado em `icons` ("citar_ilustracao", com sublinhado) --
+            // e o botao sai SEM IMAGEM, em silencio. Medido: o
+            // `background-image` do span do icone vinha `none`.
+            //
+            // No plugin `citacao` isso passa despercebido porque "Citacao" ->
+            // "citacao" coincide com o nome do arquivo.
+            icon: 'citar_ilustracao'
         });
 
         CKEDITOR.dialog.add('inserirCitacaoIlustracao', this.path + 'dialogs/citar_ilustracao.js');
@@ -55,6 +64,19 @@ CKEDITOR.plugins.citar_ilustracao = {
     // uma figura ANTES muda o numero de todas as seguintes. E no PDF quem manda
     // e' o `\ref`, resolvido pelo proprio LaTeX.
     inserir: function(editor, ref, rotulo) {
+        // ⚠️ EDITAR substitui; nunca insere dentro. Relatado em tela: inserir uma
+        // citacao e depois tentar troca-la por outra figura produzia
+        // "FigurFigura 2a 1" -- a mencao nova entrava DENTRO da antiga, partindo
+        // o texto dela ao meio. O `insertElement` poe no ponto do cursor, e o
+        // cursor estava dentro da mencao que se queria editar.
+        var existente = CKEDITOR.plugins.citar_ilustracao.selecionada(editor);
+
+        if (existente) {
+            existente.setAttribute('data-alvo', ref);
+            existente.setText(rotulo);
+            return;
+        }
+
         var mencao = editor.document.createElement('refilustracao');
 
         mencao.setAttributes({
@@ -64,5 +86,25 @@ CKEDITOR.plugins.citar_ilustracao = {
         mencao.setText(rotulo);
 
         editor.insertElement(mencao);
+    },
+
+    // A mencao sob o cursor (ou selecionada), se houver. Mesmo padrao do
+    // `getSelectedCitation` do plugin `citacao`.
+    selecionada: function(editor) {
+        var selecao = editor.getSelection();
+        if (!selecao) { return null; }
+
+        var elemento = selecao.getSelectedElement();
+        if (elemento && elemento.getName() === 'refilustracao') { return elemento; }
+
+        var faixa = selecao.getRanges()[0];
+        if (!faixa) { return null; }
+
+        var no = faixa.startContainer;
+        while (no && !(no.type === CKEDITOR.NODE_ELEMENT && no.getName() === 'refilustracao')) {
+            no = no.getParent();
+        }
+
+        return no;
     }
 };

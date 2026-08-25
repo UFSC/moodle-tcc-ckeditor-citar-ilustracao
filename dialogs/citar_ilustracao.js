@@ -52,6 +52,22 @@
                     'default': itens[0][1]
                 }]
             }],
+            // Editando uma menção existente: o diálogo abre já apontando para
+            // a ilustração citada hoje. Sem isso o aluno escolhe às cegas -- não
+            // vê de qual figura está saindo.
+            onShow: function() {
+                if (vazio) { return; }
+
+                var existente = CKEDITOR.plugins.citar_ilustracao.selecionada(editor);
+                if (!existente) { return; }
+
+                var alvo = existente.getAttribute('data-alvo');
+                var conhecida = ilustracoes.some(function(i) { return i.ref === alvo; });
+                if (conhecida) {
+                    this.getContentElement('principal', 'ilustracao').setValue(alvo);
+                }
+            },
+
             onOk: function() {
                 if (vazio) { return; }
 
